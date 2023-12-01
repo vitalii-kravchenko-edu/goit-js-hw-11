@@ -11,16 +11,13 @@ const refs = {
 
 refs.loadMoreBtn.style.display = 'none';
 let page = 1;
-const inputValue = refs.searchForm.elements['searchQuery'].value
-  .toLowerCase()
-  .trim();
 refs.searchForm.addEventListener('submit', handleSearchFormSubmit);
 
 async function handleSearchFormSubmit(e) {
   e.preventDefault();
 
   try {
-    const imgs = await serviceImgs(page, inputValue);
+    const imgs = await serviceImgs(page);
     refs.gallery.innerHTML = createMarkup(imgs);
     const instance = new SimpleLightbox('.gallery a', {
       captionsData: 'alt',
@@ -38,7 +35,7 @@ async function handleLoadMore() {
   page += 1;
   refs.loadMoreBtn.disabled = true;
   try {
-    const imgs = await serviceImgs(page, inputValue);
+    const imgs = await serviceImgs(page);
     refs.gallery.insertAdjacentHTML('beforeend', createMarkup(imgs));
     refs.loadMoreBtn.disabled = false;
     const instance = new SimpleLightbox('.gallery a', {
@@ -58,12 +55,15 @@ async function handleLoadMore() {
   }
 }
 
-async function serviceImgs(page = 1, tag) {
+async function serviceImgs(page = 1) {
   const BASE_URL = 'https://pixabay.com/api';
   const API_KEY = '41015313-3795b9b90280ed51c599e304f';
+  const inputValue = refs.searchForm.elements['searchQuery'].value
+    .toLowerCase()
+    .trim();
   const params = new URLSearchParams({
     key: API_KEY,
-    q: tag,
+    q: inputValue,
     image_type: 'photo',
     orientation: 'horizontal',
     safesearch: true,
