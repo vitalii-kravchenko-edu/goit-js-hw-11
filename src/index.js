@@ -11,11 +11,16 @@ const refs = {
 
 refs.loadMoreBtn.style.display = 'none';
 let page;
+
 refs.searchForm.addEventListener('submit', handleSearchFormSubmit);
 
 async function handleSearchFormSubmit(e) {
   e.preventDefault();
   page = 1;
+  if (!refs.searchForm.elements['searchQuery'].value.trim()) {
+    Notiflix.Notify.warning('Please enter a search query');
+    return;
+  }
   try {
     const imgs = await serviceImgs(page);
     refs.gallery.innerHTML = createMarkup(imgs);
