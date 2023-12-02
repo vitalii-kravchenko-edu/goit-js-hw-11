@@ -10,21 +10,26 @@ const refs = {
 };
 
 refs.loadMoreBtn.style.display = 'none';
-let page = 1;
+let page;
 refs.searchForm.addEventListener('submit', handleSearchFormSubmit);
 
 async function handleSearchFormSubmit(e) {
   e.preventDefault();
-
+  page = 1;
   try {
     const imgs = await serviceImgs(page);
     refs.gallery.innerHTML = createMarkup(imgs);
+
     const instance = new SimpleLightbox('.gallery a', {
       captionsData: 'alt',
       captionPosition: 'bottom',
       captionDelay: 250,
     });
-    refs.loadMoreBtn.style.display = 'block';
+
+    if (!(imgs.length < 40)) {
+      refs.loadMoreBtn.style.display = 'block';
+    }
+
     refs.loadMoreBtn.addEventListener('click', handleLoadMore);
   } catch (err) {
     console.log(err);
@@ -45,7 +50,7 @@ async function handleLoadMore() {
     });
     instance.refresh();
 
-    if (page >= 13) {
+    if (page >= 13 || imgs.length < 40) {
       refs.loadMoreBtn.style.display = 'none';
       refs.searchForm.reset();
       return;
@@ -73,9 +78,17 @@ async function serviceImgs(page = 1) {
 
   try {
     const { data } = await axios.get(`${BASE_URL}/?${params}`);
+    if (!(page > 1)) {
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+    } else if (data.totalHits < params.per_page) {
+      refs.loadMoreBtn.style.display = 'none';
+    }
     return data.hits;
   } catch (err) {
     console.log(err);
+    Notiflix.Notify.failure(
+      'Oops! Something went wrong! Try reloading the page!'
+    );
   }
 }
 
